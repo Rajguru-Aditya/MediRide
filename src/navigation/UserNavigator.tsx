@@ -5,7 +5,7 @@ import BookAmbulanceScreen from '../screens/User/BookAmbulanceScreen';
 
 const Stack = createNativeStackNavigator();
 
-const UserNavigator = ({ user, navigation }: any) => {
+const UserNavigator = ({ user }: any) => {
   return (
     <Stack.Navigator>
       <Stack.Screen name="Home"
@@ -14,7 +14,7 @@ const UserNavigator = ({ user, navigation }: any) => {
       }}
       >
         {(props) => (
-          <HomeScreen {...props} user={user} navigation={navigation} />
+          <HomeScreen {...props} user={user} />
         )}
       </Stack.Screen>
       <Stack.Screen name="BookAmbulance"
@@ -23,7 +23,7 @@ const UserNavigator = ({ user, navigation }: any) => {
       }}
       >
         {(props) => (
-          <BookAmbulanceScreen {...props} user={user} navigation={navigation} />
+          <BookAmbulanceScreen {...props} user={user} />
         )}
       </Stack.Screen>
     </Stack.Navigator>

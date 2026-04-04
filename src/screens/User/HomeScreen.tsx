@@ -205,7 +205,7 @@ const HomeScreen = ({ navigation }: any) => {
               <Pressable
                 key={index}
                 style={styles.card}
-                onPress={() => navigation.navigate('BookAmbulance')}
+                onPress={() => navigation.navigate('BookAmbulance', { type: type })}
               >
                 <View style={styles.iconBox}>
                   <Icon color="#FF3B30" size={18} />
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
 
-  sosContainer: { alignItems: 'center', marginVertical: 20 },
+  sosContainer: { alignItems: 'center', marginVertical: 20, marginTop: 50 },
 
   sosWrapper: { alignItems: 'center', justifyContent: 'center' },
 
