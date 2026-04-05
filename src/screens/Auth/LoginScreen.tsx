@@ -97,8 +97,8 @@ const LoginScreen = ({ navigation, setUser, setRole }: any) => {
         {/* CTA */}
         <Pressable
           onPress={() => {
-            setUser({ uid: '123', role: 'user' });
-            setRole('user');
+            setUser({ uid: '123', role: 'driver' });
+            setRole('driver');
             navigation.replace('Home');
           }}
           style={({ pressed }) => [ 
