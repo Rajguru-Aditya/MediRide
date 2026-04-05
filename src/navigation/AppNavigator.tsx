@@ -23,10 +23,10 @@ const AppNavigator = () => {
   }
 
   if (role === 'driver') {
-    return <DriverNavigator />;
+    return <DriverNavigator user={user} setUser={setUser} setRole={setRole} key="driver"/>
   }
 
-  return <UserNavigator />;
+  return <UserNavigator user={user} setUser={setUser} setRole={setRole}     key="user"/>;
 };
 
 export default AppNavigator;

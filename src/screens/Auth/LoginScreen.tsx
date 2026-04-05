@@ -97,8 +97,13 @@ const LoginScreen = ({ navigation, setUser, setRole }: any) => {
         {/* CTA */}
         <Pressable
           onPress={() => {
-            setUser({ uid: '123', role: 'driver' });
-            setRole('driver');
+            if (phone === '9999999999') {
+              setUser({ uid: '123', role: 'driver' });
+              setRole('driver');
+            } else {
+              setUser({ uid: '123', role: 'user' });
+              setRole('user');
+            }
             navigation.replace('Home');
           }}
           style={({ pressed }) => [ 

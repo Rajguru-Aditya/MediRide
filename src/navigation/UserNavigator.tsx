@@ -4,12 +4,13 @@ import HomeScreen from '../screens/User/HomeScreen';
 import BookAmbulanceScreen from '../screens/User/BookAmbulanceScreen';
 import HospitalSelectionScreen from '../screens/User/HospitalSelectionScreen';
 import ConfirmationScreen from '../screens/User/ConfirmationScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
-const UserNavigator = ({ user }: any) => {
+const UserNavigator = ({ user, setUser, setRole }: any) => {
   return (
-    <Stack.Navigator>
+    <Stack.Navigator initialRouteName='Home'>
       <Stack.Screen name="Home"
       options={{
         headerShown: false,
@@ -45,6 +46,19 @@ const UserNavigator = ({ user }: any) => {
       >
         {(props) => (
           <ConfirmationScreen {...props} user={user} />
+        )}
+      </Stack.Screen>
+      <Stack.Screen
+        name="Profile"
+        options={{ headerShown: false }}
+      >
+        {(props) => (
+          <ProfileScreen
+            {...props}
+            setUser={setUser}
+            setRole={setRole}
+            role="user"
+          />
         )}
       </Stack.Screen>
     </Stack.Navigator>

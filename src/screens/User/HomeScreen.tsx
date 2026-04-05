@@ -7,6 +7,7 @@ import {
   ScrollView,
   StatusBar,
   Animated,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -30,6 +31,20 @@ const HomeScreen = ({ navigation }: any) => {
 
   const pulse1 = useRef(new Animated.Value(0)).current;
   const pulse2 = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const backAction = () => {
+      // prevent app exit
+      return true;
+    };
+  
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction
+    );
+  
+    return () => backHandler.remove();
+  }, []);
 
   useEffect(() => {
     const createPulse = (anim: Animated.Value, delay: number) => {

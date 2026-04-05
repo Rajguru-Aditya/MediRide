@@ -23,7 +23,7 @@ const DriverHome = ({ navigation }: any) => {
       <ScrollView
         style={styles.container}
         contentContainerStyle={{
-          paddingTop: insets.top + 10,
+          paddingTop: insets.top,
           paddingBottom: 120,
         }}
         showsVerticalScrollIndicator={false}
@@ -135,7 +135,10 @@ const DriverHome = ({ navigation }: any) => {
           label="Requests"
           onPress={() => navigation.navigate('RideRequests')}
         />
-        <DriverNavItem label="History" />
+        <DriverNavItem
+          label="RideHistory"
+          onPress={() => navigation.navigate('RideHistory')}
+        />
         <DriverNavItem label="Profile" />
       </View>
     </SafeAreaView>

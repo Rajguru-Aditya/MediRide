@@ -9,9 +9,48 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MapPin, Activity, Heart, Truck } from 'lucide-react-native';
+import { db } from '../../services/firebase';
+import { collection, addDoc, serverTimestamp } from '@react-native-firebase/firestore';
 
 const ConfirmationScreen = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
+
+  const createRide = async () => {
+    try {
+      const rideRef = await addDoc(collection(db, 'rides'), {
+        userId: 'user_123',
+  
+        patientName: 'Rahul Sharma',
+        patientAge: 45,
+        condition: 'heart',
+        severity: 'critical',
+  
+        pickup: {
+          address: 'Bandra West',
+          lat: 19.0596,
+          lng: 72.8295,
+        },
+  
+        drop: {
+          hospitalId: 'lilavati',
+          hospitalName: 'Lilavati Hospital',
+        },
+  
+        driverId: null,
+        status: 'searching',
+  
+        fareEstimate: 2800,
+        createdAt: serverTimestamp(),
+      });
+  
+      console.log('Ride created:', rideRef.id);
+  
+      navigation.replace('Home');
+  
+    } catch (error) {
+      console.log('CREATE RIDE ERROR:', error);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -89,7 +128,7 @@ const ConfirmationScreen = ({ navigation }: any) => {
         {/* CTA */}
         <Pressable
           style={styles.button}
-          onPress={() => navigation.replace('Home')}
+          onPress={createRide}
         >
           <Text style={styles.buttonText}>Confirm & Dispatch Ambulance</Text>
         </Pressable>

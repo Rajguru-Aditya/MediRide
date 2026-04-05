@@ -18,13 +18,15 @@ const AuthNavigator = ({ setUser, setRole }: any) => {
           <LoginScreen {...props} setUser={setUser} setRole={setRole} />
         )}
       </Stack.Screen>
-      <Stack.Screen
-      name="Signup"
-      component={SignupScreen}
+      <Stack.Screen name="Signup"
       options={{
         headerShown: false,
       }}
-      />
+      >
+        {(props) => (
+          <SignupScreen {...props} setUser={setUser} setRole={setRole} />
+        )}
+      </Stack.Screen>
     </Stack.Navigator>
   );
 };

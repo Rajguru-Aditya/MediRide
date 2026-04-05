@@ -38,7 +38,7 @@ const ActiveRideScreen = ({navigation}: any) => {
       <View style={{ flex: 1 }}>
 
         {/* 🚨 Top Status */}
-        <View style={[styles.topBar, { paddingTop: insets.top + 10 }]}>
+        <View style={[styles.topBar, { paddingTop: insets.top }]}>
           <View style={styles.statusBadge}>
             <Text style={styles.statusText}>🚑 EN ROUTE TO PICKUP</Text>
           </View>

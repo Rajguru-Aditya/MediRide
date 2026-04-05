@@ -9,6 +9,8 @@ import {
   Animated,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { db } from '../../services/firebase';
+import { collection, query, where, onSnapshot, updateDoc, doc } from '@react-native-firebase/firestore';
 
 const Detail = ({ label, value }: any) => (
   <View style={styles.detailRow}>
@@ -24,8 +26,33 @@ const Divider = () => (
 const RideRequests = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
   const [timeLeft, setTimeLeft] = useState(28);
+  const [ride, setRide] = useState<any>(null);
 
   const pulseAnim = useRef(new Animated.Value(0)).current;
+
+  // Detect firebase data change to get ride
+  useEffect(() => {
+    const q = query(
+      collection(db, 'rides'),
+      where('status', '==', 'searching')
+    );
+  
+    const unsubscribe = onSnapshot(q, snapshot => {
+      if (!snapshot.empty) {
+        const docSnap = snapshot.docs[0];
+  
+        setRide({
+          id: docSnap.id,
+          ...docSnap.data(),
+        });
+      } else {
+        // 🔥 IMPORTANT: clear ride if none
+        setRide(null);
+      }
+    });
+  
+    return unsubscribe;
+  }, []);
 
   // Countdown
   useEffect(() => {
@@ -54,6 +81,35 @@ const RideRequests = ({ navigation }: any) => {
     ).start();
   }, []);
 
+  const acceptRide = async () => {
+    if (!ride) return;
+  
+    await updateDoc(doc(db, 'rides', ride.id), {
+      driverId: 'driver_123',
+      status: 'accepted',
+    });
+  
+    navigation.replace('ActiveRide');
+  };
+
+  if (!ride) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor="#0A0F2C" />
+  
+        <View style={styles.empty}>
+          <Text style={{ color: '#9CA3AF', fontSize: 14 }}>
+            No active ride requests right now
+          </Text>
+  
+          <Text style={{ color: '#6B7280', fontSize: 12, marginTop: 6 }}>
+            Waiting for new emergencies...
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#0A0F2C" />
@@ -62,7 +118,7 @@ const RideRequests = ({ navigation }: any) => {
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingTop: insets.top + 10,
+            paddingTop: insets.top,
             paddingBottom: 180,
           }}
         >
@@ -154,7 +210,7 @@ const RideRequests = ({ navigation }: any) => {
         <View style={[styles.bottom, { paddingBottom: insets.bottom + 10 }]}>
           <Pressable
             style={styles.accept}
-            onPress={() => navigation.navigate('ActiveRide')}
+            onPress={acceptRide}
           >
             <Text style={styles.acceptText}>ACCEPT REQUEST</Text>
           </Pressable>
@@ -315,4 +371,10 @@ const styles = StyleSheet.create({
     color: '#FFB800',
     fontSize: 12,
   },
+
+  empty: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center"
+  }
 });

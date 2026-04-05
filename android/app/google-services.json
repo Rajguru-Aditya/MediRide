@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1026312660063",
+    "project_id": "mediride-60ca9",
+    "storage_bucket": "mediride-60ca9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1026312660063:android:aa5cf929dabbcb854be7ea",
+        "android_client_info": {
+          "package_name": "com.mediride"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVZlrwjZRPdNJxR076462q-1B5mfmpCAo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

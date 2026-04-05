@@ -11,48 +11,104 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, AlertTriangle } from 'lucide-react-native';
 
-const renderInput = (label: string, placeholder: string) => (
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
+const SignupScreen = ({ navigation, setUser, setRole }: any) => {
+  const insets = useSafeAreaInsets();
+
+  const [activeTab, setActiveTab] = useState<'consumer' | 'provider' | 'hospital'>('consumer');
+  const [hasInsurance, setHasInsurance] = useState(false);
+
+  // 🔥 Required fields
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  // 🔹 Optional fields
+  const [aadhaar, setAadhaar] = useState('');
+  const [emergencyName, setEmergencyName] = useState('');
+  const [emergencyPhone, setEmergencyPhone] = useState('');
+  const [customerRole, setCustomerRole] = useState<'user' | 'driver' | 'hospital'>('user');
+
+  // 🔥 Reusable Input
+  const renderInput = (
+    label: string,
+    placeholder: string,
+    value: string,
+    setValue: (text: string) => void,
+    keyboardType: any = 'default',
+    secure: boolean = false
+  ) => (
     <View style={styles.section}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         placeholder={placeholder}
         placeholderTextColor="#6B7280"
         style={styles.input}
+        value={value}
+        onChangeText={setValue}
+        keyboardType={keyboardType}
+        secureTextEntry={secure}
       />
     </View>
   );
-  
-  const renderPhoneInput = (label: string, placeholder: string) => (
-    <View style={styles.section}>
-      <Text style={styles.label}>{label}</Text>
-  
-      <View style={styles.phoneRow}>
-        <View style={styles.countryCode}>
-          <Text style={{ color: '#fff' }}>+91</Text>
-        </View>
-  
-        <TextInput
-          placeholder={placeholder}
-          placeholderTextColor="#6B7280"
-          keyboardType="phone-pad"
-          style={styles.input}
-        />
-      </View>
-    </View>
-  );
 
-const SignupScreen = ({ navigation }: any) => {
-  const insets = useSafeAreaInsets();
-
-  const [activeTab, setActiveTab] = useState<'consumer' | 'provider' | 'hospital'>('consumer');
-  const [hasInsurance, setHasInsurance] = useState(false);
+  // 🔥 Signup Handler
+  const handleSignup = async () => {
+    try {
+      if (!fullName || !phone || !email || !password) {
+        console.log('Please fill all required fields');
+        return;
+      }
+  
+      if (!customerRole) {
+        console.log('Please select a role');
+        return;
+      }
+  
+      // 🔐 Create user
+      const userCredential = await auth().createUserWithEmailAndPassword(
+        email.trim(),
+        password
+      );
+  
+      const user = userCredential.user;
+  
+      // 🗄️ Save in Firestore
+      await firestore().collection('users').doc(user.uid).set({
+        fullName,
+        phoneNumber: phone,
+        email: email.trim(),
+        aadhaar,
+        emergencyContact: {
+          name: emergencyName,
+          phone: emergencyPhone,
+        },
+        hasInsurance,
+        role: customerRole,
+        createdAt: firestore.FieldValue.serverTimestamp(),
+      });
+  
+      // 🔥 THIS IS THE IMPORTANT PART
+      setUser(user);
+      setRole(customerRole);
+  
+      // ❌ REMOVE THIS
+      // navigation.replace('Home');
+  
+    } catch (error: any) {
+      console.log('Signup error:', error.message);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#0A0F2C" />
 
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        
+
         {/* Header */}
         <View style={styles.header}>
           <Pressable onPress={() => navigation.goBack()}>
@@ -65,19 +121,19 @@ const SignupScreen = ({ navigation }: any) => {
 
         {/* Tabs */}
         <View style={styles.tabWrapper}>
-          {['consumer', 'provider', 'hospital'].map((tab: any) => (
+        {['user', 'driver', 'hospital'].map((tab: any) => (
             <Pressable
               key={tab}
-              onPress={() => setActiveTab(tab)}
+              onPress={() => setCustomerRole(tab)}
               style={[
                 styles.tab,
-                activeTab === tab && styles.activeTab,
+                customerRole === tab && styles.activeTab,
               ]}
             >
               <Text
                 style={[
                   styles.tabText,
-                  activeTab === tab && styles.activeTabText,
+                  customerRole === tab && styles.activeTabText,
                 ]}
               >
                 {tab.charAt(0).toUpperCase() + tab.slice(1)}
@@ -86,32 +142,35 @@ const SignupScreen = ({ navigation }: any) => {
           ))}
         </View>
 
-        {/* Form */}
         <ScrollView showsVerticalScrollIndicator={false}>
-          
+
           {/* Profile */}
           <View style={styles.profileContainer}>
             <View style={styles.profileCircle}>
               <Camera color="#6B7280" size={28} />
-                <View style={styles.addBtn}>
-                    <Text style={{ color: '#fff' }}>+</Text>
-                </View>
+              <View style={styles.addBtn}>
+                <Text style={{ color: '#fff' }}>+</Text>
+              </View>
             </View>
-
           </View>
 
-          {/* Input helper */}
-          {renderInput('Full Name', 'Enter your full name')}
+          {/* 🔥 REQUIRED FIELDS */}
+          {renderInput('Full Name *', 'Enter your full name', fullName, setFullName)}
 
-          {renderPhoneInput('Phone Number', 'Enter mobile number')}
+          {renderInput('Phone Number *', 'Enter mobile number', phone, setPhone, 'phone-pad')}
 
-          {renderInput('Aadhaar / PAN Number', 'Enter Aadhaar or PAN')}
+          {renderInput('Email *', 'Enter your email', email, setEmail, 'email-address')}
 
-          {renderInput('Emergency Contact Name', 'Enter contact name')}
+          {renderInput('Password *', 'Enter password', password, setPassword, 'default', true)}
 
-          {renderPhoneInput('Emergency Contact Number', 'Enter contact number')}
+          {/* OPTIONAL */}
+          {renderInput('Aadhaar / PAN Number', 'Enter Aadhaar or PAN', aadhaar, setAadhaar)}
 
-          {/* Insurance Toggle */}
+          {renderInput('Emergency Contact Name', 'Enter contact name', emergencyName, setEmergencyName)}
+
+          {renderInput('Emergency Contact Number', 'Enter contact number', emergencyPhone, setEmergencyPhone, 'phone-pad')}
+
+          {/* Insurance */}
           <View style={styles.section}>
             <View style={styles.toggleRow}>
               <Text style={styles.label}>Health Insurance</Text>
@@ -135,7 +194,7 @@ const SignupScreen = ({ navigation }: any) => {
             {hasInsurance && (
               <View style={styles.input}>
                 <Text style={{ color: '#6B7280' }}>
-                  Select insurance provider (dropdown later)
+                  Insurance provider (dropdown later)
                 </Text>
               </View>
             )}
@@ -150,9 +209,10 @@ const SignupScreen = ({ navigation }: any) => {
           </View>
 
           {/* CTA */}
-          <Pressable style={styles.button}>
+          <Pressable style={styles.button} onPress={handleSignup}>
             <Text style={styles.buttonText}>Create Account</Text>
           </Pressable>
+
         </ScrollView>
       </View>
     </SafeAreaView>
