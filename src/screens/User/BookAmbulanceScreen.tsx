@@ -67,29 +67,29 @@ const BookAmbulanceScreen = ({ navigation }: any) => {
             {['Details', 'Hospital', 'Confirm'].map((step, index) => (
                 <React.Fragment key={index}>
                 
-                {/* Step */}
-                <View style={styles.stepItem}>
-                    <View
-                    style={[
-                        styles.stepCircle,
-                        index === 0 && styles.activeStep,
-                    ]}
-                    >
-                    <Text style={{ color: '#fff' }}>{index + 1}</Text>
+                    {/* Step */}
+                    <View style={styles.stepItem}>
+                        <View
+                        style={[
+                            styles.stepCircle,
+                            index === 0 && styles.activeStep,
+                        ]}
+                        >
+                        <Text style={{ color: '#fff' }}>{index + 1}</Text>
+                        </View>
+
+                        <Text
+                        style={[
+                            styles.stepText,
+                            index === 0 && { color: '#fff' },
+                        ]}
+                        >
+                        {step}
+                        </Text>
                     </View>
 
-                    <Text
-                    style={[
-                        styles.stepText,
-                        index === 0 && { color: '#fff' },
-                    ]}
-                    >
-                    {step}
-                    </Text>
-                </View>
-
-                {/* Connector Line (only between items) */}
-                {index !== 2 && <View style={styles.stepLine} />}
+                    {/* Connector Line (only between items) */}
+                    {index !== 2 && <View style={styles.stepLine} />}
                 </React.Fragment>
             ))}
             </View>
@@ -165,7 +165,9 @@ const BookAmbulanceScreen = ({ navigation }: any) => {
           </Text>
 
           {/* CTA */}
-          <Pressable style={styles.button}>
+          <Pressable style={styles.button}
+            onPress={() => navigation.navigate('HospitalSelection')}
+          >
             <Text style={styles.buttonText}>Find Available Ambulances</Text>
           </Pressable>
 
@@ -187,7 +189,7 @@ const BookAmbulanceScreen = ({ navigation }: any) => {
         ]}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: color }} />
+          <View style={[{ width: active ? 8 : 6, height: active ? 8 : 6, borderRadius: 3, backgroundColor: color }, active && {borderWidth: 1, borderColor: "#fff"}]} />
           <Text style={{ color: active ? '#fff' : '#9CA3AF' }}>{label}</Text>
         </View>
       </Pressable>
@@ -214,9 +216,10 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       justifyContent: 'space-between',
       marginBottom: 20,
+      alignItems: 'center'
     },
   
-    stepItem: { alignItems: 'center' },
+    stepItem: { alignItems: 'center', },
   
     stepCircle: {
       width: 30,
