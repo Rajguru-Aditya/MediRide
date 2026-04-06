@@ -65,7 +65,7 @@ const HomeScreen = ({ navigation, user }: any) => {
           `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
           {
             headers: {
-              'User-Agent': 'RapidAid/1.0 (college project)',
+              'User-Agent': 'MediRide/1.0',
               'Accept': 'application/json',
             },
           }
@@ -80,7 +80,7 @@ const HomeScreen = ({ navigation, user }: any) => {
           data?.address?.neighbourhood ||
           data?.address?.city_district ||
           data?.address?.city ||
-          'Mumbai';
+          'Unknown';
         setLocationName(suburb);
 
         // Save to Firestore
@@ -337,8 +337,8 @@ const HomeScreen = ({ navigation, user }: any) => {
       {/* ── Bottom Nav ── */}
       <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
         <NavItem icon={Home} label="Home" active navigation={navigation} screen="Home" />
-        <NavItem icon={Calendar} label="Bookings" navigation={navigation} screen="BookAmbulance" />
-        <NavItem icon={Navigation} label="Track" navigation={navigation} screen="UserTraking" />
+        <NavItem icon={Calendar} label="Bookings" navigation={navigation} screen="BookingsScreen" />
+        <NavItem icon={Navigation} label="Track" navigation={navigation} screen="UserTracking" />
         <NavItem icon={User} label="Profile" navigation={navigation} screen="Profile" />
       </View>
     </SafeAreaView>

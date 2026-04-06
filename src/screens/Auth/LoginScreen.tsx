@@ -168,16 +168,15 @@ const LoginScreen = ({ navigation, setUser, setRole }: any) => {
         </Pressable>
 
         {/* Divider */}
-        <View style={styles.dividerRow}>
+        {/* <View style={styles.dividerRow}>
           <View style={styles.line} />
           <Text style={styles.dividerText}>or continue with</Text>
           <View style={styles.line} />
         </View>
 
-        {/* Google (future) */}
         <TouchableOpacity style={styles.googleButton}>
           <Text style={styles.googleText}>Continue with Google</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         {/* Register */}
         <View style={styles.footer}>

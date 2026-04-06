@@ -6,6 +6,7 @@ import HospitalSelectionScreen from '../screens/User/HospitalSelectionScreen';
 import ConfirmationScreen from '../screens/User/ConfirmationScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import UserTrackingScreen from '../screens/User/UserTrackingScreen';
+import BookingsScreen from '../screens/User/BookingsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -63,11 +64,24 @@ const UserNavigator = ({ user, setUser, setRole }: any) => {
         )}
       </Stack.Screen>
       <Stack.Screen
-        name="UserTraking"
+        name="UserTracking"
         options={{ headerShown: false }}
       >
         {(props) => (
           <UserTrackingScreen
+            {...props}
+            setUser={setUser}
+            setRole={setRole}
+            role="user"
+          />
+        )}
+      </Stack.Screen>
+      <Stack.Screen
+        name="BookingsScreen"
+        options={{ headerShown: false }}
+      >
+        {(props) => (
+          <BookingsScreen
             {...props}
             setUser={setUser}
             setRole={setRole}

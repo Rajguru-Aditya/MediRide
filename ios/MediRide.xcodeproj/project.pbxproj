@@ -30,6 +30,8 @@
 		67B5E9180BDC4B9199A75566 /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D8FF162CD841440EB3F175BC /* Octicons.ttf */; };
 		26E5BF76F70A4366BEC3274A /* SimpleLineIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F4B0786E301D4B09BAEFADE6 /* SimpleLineIcons.ttf */; };
 		862BF825FF50459680FC803F /* Zocial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7A0516F750334BBAACB8BC09 /* Zocial.ttf */; };
+		540DA85E93DB47CBB81C623F /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = DB76864A83574732AF89D54D /* BootSplash.storyboard */; };
+		85844DD3BCDE44DABED8E19F /* Colors.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 069EBDBD98C24B2FBD1AF721 /* Colors.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -62,6 +64,8 @@
 		D8FF162CD841440EB3F175BC /* Octicons.ttf */ = {isa = PBXFileReference; name = "Octicons.ttf"; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		F4B0786E301D4B09BAEFADE6 /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; name = "SimpleLineIcons.ttf"; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 		7A0516F750334BBAACB8BC09 /* Zocial.ttf */ = {isa = PBXFileReference; name = "Zocial.ttf"; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		DB76864A83574732AF89D54D /* BootSplash.storyboard */ = {isa = PBXFileReference; name = "BootSplash.storyboard"; path = "MediRide/BootSplash.storyboard"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		069EBDBD98C24B2FBD1AF721 /* Colors.xcassets */ = {isa = PBXFileReference; name = "Colors.xcassets"; path = "MediRide/Colors.xcassets"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = folder.assetcatalog; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -84,6 +88,8 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */,
+				DB76864A83574732AF89D54D /* BootSplash.storyboard */,
+				069EBDBD98C24B2FBD1AF721 /* Colors.xcassets */,
 			);
 			name = MediRide;
 			sourceTree = "<group>";
@@ -244,6 +250,8 @@
 				67B5E9180BDC4B9199A75566 /* Octicons.ttf in Resources */,
 				26E5BF76F70A4366BEC3274A /* SimpleLineIcons.ttf in Resources */,
 				862BF825FF50459680FC803F /* Zocial.ttf in Resources */,
+				540DA85E93DB47CBB81C623F /* BootSplash.storyboard in Resources */,
+				85844DD3BCDE44DABED8E19F /* Colors.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react-native';
 import { Input } from '../../components/Input';
 import { getCurrentLocation } from '../../utils/location';
+import MapView, { Marker } from 'react-native-maps';
 
 // ─── Ambulance types ──────────────────────────────────────────────
 const AMBULANCE_TYPES = [
@@ -92,6 +93,8 @@ const BookAmbulanceScreen = ({ navigation }: any) => {
   // Ambulance suggestion state
   const [ambulanceId, setAmbulanceId]           = useState('als'); // default
   const [showAmbulanceSheet, setShowAmbulanceSheet] = useState(false);
+  const [showMapPicker, setShowMapPicker] = useState(false);
+  const [tempLocation, setTempLocation] = useState<any>(null);
 
   // ─── Re-suggest whenever condition or severity changes ───────────
   useEffect(() => {
@@ -123,11 +126,11 @@ const BookAmbulanceScreen = ({ navigation }: any) => {
         );
       } catch (err) {
         console.log('Location error:', err);
-        setPickupLabel('Unable to fetch location');
+        setPickupLabel('Select location manually');
       } finally {
         setLocationLoading(false);
       }
-    };
+    }
     fetchLocation();
   }, []);
 
@@ -293,7 +296,14 @@ const BookAmbulanceScreen = ({ navigation }: any) => {
           )}
 
           <Text style={styles.label}>Pickup Location</Text>
-          <View style={styles.inputWithIcon}>
+          <Pressable
+              style={styles.inputWithIcon}
+              onPress={() => {
+                if (pickupLabel === 'Select location manually') {
+                  setShowMapPicker(true);
+                }
+              }}
+            >
             <MapPin size={18} color="#FF3B30" />
             {locationLoading ? (
               <View style={styles.loadingRow}>
@@ -303,7 +313,7 @@ const BookAmbulanceScreen = ({ navigation }: any) => {
             ) : (
               <Text style={styles.inputText} numberOfLines={1}>{pickupLabel}</Text>
             )}
-          </View>
+          </Pressable>
 
           <Text style={styles.label}>Destination Hospital</Text>
           <View style={styles.inputWithIcon}>
@@ -382,6 +392,90 @@ const BookAmbulanceScreen = ({ navigation }: any) => {
           </Pressable>
         </Pressable>
       </Modal>
+
+      {/* Map Picker Modal */}
+<Modal
+  visible={showMapPicker}
+  animationType="slide"
+>
+  <View style={{ flex: 1 }}>
+    
+    {/* Map */}
+    <MapView
+      style={{ flex: 1 }}
+      initialRegion={{
+        latitude: 19.0760,
+        longitude: 72.8777,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      }}
+      onPress={(e) => {
+        setTempLocation(e.nativeEvent.coordinate);
+      }}
+    >
+      {tempLocation && (
+        <Marker coordinate={tempLocation} />
+      )}
+    </MapView>
+
+    {/* Confirm Button */}
+    <Pressable
+      style={{
+        position: 'absolute',
+        bottom: 40,
+        left: 20,
+        right: 20,
+        backgroundColor: '#FF3B30',
+        padding: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+      }}
+      onPress={async () => {
+        if (!tempLocation) return;
+
+        console.log("Pressed", tempLocation)
+
+        setCoords(tempLocation);
+
+        try {
+          console.log("Fetching temp loc")
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${tempLocation.latitude}&lon=${tempLocation.longitude}&format=json`,
+            {
+              headers: {
+                'User-Agent': 'MediRide/1.0',
+                'Accept': 'application/json',
+              },
+            }
+          );
+          const text = await res.text(); // read as text first to debug
+          const data = JSON.parse(text);
+
+          console.log("DATA: ", data);
+
+          setPickupLabel(
+            data?.address?.suburb ||
+            data?.address?.neighbourhood ||
+            data?.address?.city ||
+            'Selected Location'
+          );
+        } catch(error) {
+          console.log("Failed", error)
+          setPickupLabel('Selected Location');
+        }
+
+        setShowMapPicker(false);
+      }}
+    >
+      <Text style={{ color: '#fff', fontWeight: '600' }}>
+        Confirm Location
+      </Text>
+    </Pressable>
+
+  </View>
+</Modal>
+
+      
 
     </SafeAreaView>
   );

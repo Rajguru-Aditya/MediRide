@@ -12,7 +12,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 
-const BookingsScreen = () => {
+const BookingsScreen = ({navigation, user}: any) => {
   const insets = useSafeAreaInsets();
 
   const [rides, setRides] = useState<any[]>([]);
