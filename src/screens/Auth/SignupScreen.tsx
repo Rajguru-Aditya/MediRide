@@ -7,12 +7,14 @@ import {
   Pressable,
   ScrollView,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Camera, AlertTriangle } from 'lucide-react-native';
 
 import auth from '@react-native-firebase/auth';
 import firestore from '@react-native-firebase/firestore';
+import CustomAlert from '../../components/CustomAlert';
 
 const SignupScreen = ({ navigation, setUser, setRole }: any) => {
   const insets = useSafeAreaInsets();
@@ -31,6 +33,11 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
   const [emergencyName, setEmergencyName] = useState('');
   const [emergencyPhone, setEmergencyPhone] = useState('');
   const [customerRole, setCustomerRole] = useState<'user' | 'driver' | 'hospital'>('user');
+  const [loading, setLoading] = useState(false);
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [signedUpUser, setSignedUpUser] = useState<any>()
 
   // 🔥 Reusable Input
   const renderInput = (
@@ -55,28 +62,44 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
     </View>
   );
 
+  const handleAlertClose = () => {
+    setAlertVisible(false);
+  
+    if (alertType === 'success') {
+      setUser(signedUpUser);
+      setRole(customerRole);
+      // Navigate after success
+      // navigation.goBack(); // or navigate to home/login depending on flow
+    }
+  };
+
   // 🔥 Signup Handler
   const handleSignup = async () => {
     try {
       if (!fullName || !phone || !email || !password) {
-        console.log('Please fill all required fields');
+        setAlertType('error');
+        setAlertMessage('Please fill all required fields');
+        setAlertVisible(true);
         return;
       }
-  
+      
       if (!customerRole) {
-        console.log('Please select a role');
+        setAlertType('error');
+        setAlertMessage('Please select a role');
+        setAlertVisible(true);
         return;
       }
   
-      // 🔐 Create user
+      setLoading(true); // 🔥 start loader
+  
       const userCredential = await auth().createUserWithEmailAndPassword(
         email.trim(),
         password
       );
   
       const user = userCredential.user;
+      setSignedUpUser(user)
   
-      // 🗄️ Save in Firestore
       await firestore().collection('users').doc(user.uid).set({
         fullName,
         phoneNumber: phone,
@@ -91,21 +114,42 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
         createdAt: firestore.FieldValue.serverTimestamp(),
       });
   
-      // 🔥 THIS IS THE IMPORTANT PART
-      setUser(user);
-      setRole(customerRole);
-  
-      // ❌ REMOVE THIS
-      // navigation.replace('Home');
+      setAlertType('success');
+      setAlertMessage('Account created successfully!');
+      setAlertVisible(true);
+
   
     } catch (error: any) {
       console.log('Signup error:', error.message);
+    
+      let message = 'Something went wrong. Please try again.';
+    
+      if (error.code === 'auth/email-already-in-use') {
+        message = 'Email already in use';
+      } else if (error.code === 'auth/invalid-email') {
+        message = 'Invalid email address';
+      } else if (error.code === 'auth/weak-password') {
+        message = 'Password should be at least 6 characters';
+      }
+    
+      setAlertType('error');
+      setAlertMessage(message);
+      setAlertVisible(true);
+    } finally {
+      setLoading(false); // 🔥 stop loader
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#0A0F2C" />
+
+      <CustomAlert
+        visible={alertVisible}
+        type={alertType}
+        message={alertMessage}
+        onClose={handleAlertClose}
+      />
 
       <View style={[styles.container, { paddingTop: insets.top }]}>
 
@@ -209,8 +253,13 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
           </View>
 
           {/* CTA */}
-          <Pressable style={styles.button} onPress={handleSignup}>
-            <Text style={styles.buttonText}>Create Account</Text>
+          <Pressable style={styles.button} onPress={handleSignup} disabled={loading}>
+            {
+              loading ? (
+                <ActivityIndicator size={"small"} color={"#fff"} />
+              ) : <Text style={styles.buttonText}>Create Account</Text>
+            }
+            
           </Pressable>
 
         </ScrollView>

@@ -8,6 +8,8 @@ import {
   StatusBar,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import DriverNavItem from '../../components/DriverNavItem';
+import { Home, ClipboardList, History, User } from 'lucide-react-native';
 
 const Filter = ({ label, active }: any) => (
     <View
@@ -166,11 +168,23 @@ const RideHistoryScreen = ({ navigation }: any) => {
 
       {/* Bottom Nav */}
       <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
-        <NavItem label="Home" onPress={() => navigation.navigate('DriverHome')} />
-        <NavItem label="Requests" onPress={() => navigation.navigate('RideRequests')} />
-        <NavItem label="History" active />
-        <NavItem label="Profile" />
-      </View>
+        <DriverNavItem label="Home" icon={Home} onPress={() => navigation.navigate('DriverHome')}/>
+
+        <DriverNavItem
+            label="Requests"
+            icon={ClipboardList}
+            onPress={() => navigation.navigate('RideRequests')}
+        />
+
+        <DriverNavItem
+            label="RideHistory"
+            icon={History}
+            onPress={() => navigation.navigate('RideHistory')}
+            active
+        />
+
+        <DriverNavItem label="Profile" icon={User} onPress={() => navigation.navigate('Profile')}/>
+        </View>
     </SafeAreaView>
   );
 };

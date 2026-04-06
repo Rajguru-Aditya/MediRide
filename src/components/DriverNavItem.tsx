@@ -1,17 +1,27 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import React from 'react';
+import { View, Text, Pressable } from 'react-native';
 
-const DriverNavItem = ({ label, active, onPress }: any) => (
-    <Pressable style={styles.navItem} onPress={onPress}>
-      <Text style={[styles.navText, active && { color: '#FF3B30' }]}>
+const DriverNavItem = ({ label, active, onPress, icon: Icon }: any) => {
+  return (
+    <Pressable onPress={onPress} style={{ alignItems: 'center' }}>
+      {Icon && (
+        <Icon
+          size={22}
+          color={active ? '#34C759' : '#9CA3AF'}
+          strokeWidth={2}
+        />
+      )}
+      <Text
+        style={{
+          color: active ? '#34C759' : '#9CA3AF',
+          fontSize: 12,
+          marginTop: 4,
+        }}
+      >
         {label}
       </Text>
     </Pressable>
   );
+};
 
-export default DriverNavItem
-
-const styles = StyleSheet.create({
-    navItem: { alignItems: 'center' },
-
-    navText: { color: '#9CA3AF', fontSize: 12 },
-})
+export default DriverNavItem;

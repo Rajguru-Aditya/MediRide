@@ -11,6 +11,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import DriverNavItem from '../../components/DriverNavItem';
 import DriverActivityItem from '../../components/DriverActivityItem';
 import DriverStatCard from '../../components/DriverStatCard';
+import { Home, ClipboardList, History, User } from 'lucide-react-native';
 
 const DriverHome = ({ navigation }: any) => {
   const insets = useSafeAreaInsets();
@@ -130,16 +131,21 @@ const DriverHome = ({ navigation }: any) => {
 
       {/* Bottom Nav */}
       <View style={[styles.bottomNav, { paddingBottom: insets.bottom }]}>
-        <DriverNavItem label="Home" active />
+        <DriverNavItem label="Home" active icon={Home} />
+
         <DriverNavItem
           label="Requests"
+          icon={ClipboardList}
           onPress={() => navigation.navigate('RideRequests')}
         />
+
         <DriverNavItem
           label="RideHistory"
+          icon={History}
           onPress={() => navigation.navigate('RideHistory')}
         />
-        <DriverNavItem label="Profile" />
+
+        <DriverNavItem label="Profile" icon={User} onPress={() => navigation.navigate('Profile')} />
       </View>
     </SafeAreaView>
   );

@@ -1,6 +1,6 @@
 import { StyleSheet, Text, TextInput, View } from "react-native";
 
-export const Input = ({ label, placeholder, keyboardType = 'default' }: any) => (
+export const Input = ({ label, placeholder, keyboardType = 'default', onChangeText }: any) => (
     <View style={{ marginBottom: 14 }}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
@@ -8,6 +8,7 @@ export const Input = ({ label, placeholder, keyboardType = 'default' }: any) => 
         placeholderTextColor="#6B7280"
         keyboardType={keyboardType}
         style={styles.input}
+        onChangeText={onChangeText}
       />
     </View>
 );

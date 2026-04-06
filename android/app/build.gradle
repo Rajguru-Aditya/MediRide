@@ -106,6 +106,37 @@ android {
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }
+    // configurations.all {
+    //     resolutionStrategy {
+    //         force "com.google.android.gms:play-services-location:21.3.0"
+    //         force "com.google.android.gms:play-services-base:18.10.0"
+    //         force "com.google.android.gms:play-services-basement:18.10.0"
+    //         force "com.google.android.gms:play-services-tasks:18.4.0"
+    //     }
+    // }
+}
+
+configurations.all {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'com.google.android.gms') {
+            if (details.requested.name == 'play-services-location') {
+                details.useVersion '21.3.0'
+                details.because 'Force consistent GMS location version'
+            }
+            if (details.requested.name == 'play-services-maps') {
+                details.useVersion '19.1.0'
+                details.because 'Force consistent GMS maps version'
+            }
+            if (details.requested.name == 'play-services-base') {
+                details.useVersion '18.5.0'
+                details.because 'Force consistent GMS base version'
+            }
+            if (details.requested.name == 'play-services-basement') {
+                details.useVersion '18.4.0'
+                details.because 'Force consistent GMS basement version'
+            }
+        }
+    }
 }
 
 dependencies {
@@ -117,4 +148,8 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+    // implementation project(':react-native-geolocation-service')
+
+    implementation 'com.google.android.gms:play-services-maps:19.1.0'
+
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,23 @@ import {
   Animated,
   Pressable,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { Activity } from 'lucide-react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import auth from '@react-native-firebase/auth';
+import firestore from '@react-native-firebase/firestore';
+
 const LoginScreen = ({ navigation, setUser, setRole }: any) => {
-  const [phone, setPhone] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = useState(false);
+
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const isValid = phone.length === 10;
   const insets = useSafeAreaInsets();
+
+  const isValid = email.length > 0 && password.length > 0;
 
   useEffect(() => {
     Animated.loop(
@@ -35,20 +43,57 @@ const LoginScreen = ({ navigation, setUser, setRole }: any) => {
     ).start();
   }, []);
 
+  // 🔥 LOGIN HANDLER
+  const handleLogin = async () => {
+    try {
+      if (!email || !password) {
+        console.log('Enter email and password');
+        return;
+      }
+  
+      setLoading(true); // 🔥 start loader
+  
+      const userCredential = await auth().signInWithEmailAndPassword(
+        email.trim(),
+        password
+      );
+  
+      const user = userCredential.user;
+  
+      const doc = await firestore()
+        .collection('users')
+        .doc(user.uid)
+        .get();
+  
+      const role = doc.data()?.role;
+  
+      if (!role) {
+        console.log('No role found');
+        setLoading(false);
+        return;
+      }
+  
+      setUser(user);
+      setRole(role);
+  
+    } catch (error: any) {
+      console.log('Login error:', error.message);
+    } finally {
+      setLoading(false); // 🔥 stop loader
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar
-        barStyle="light-content"
-        backgroundColor="#0A0F2C"
-      />
-  
-        <View
-          style={[
-            styles.container,
-            { paddingTop: insets.top + 20 },
-          ]}
-        >
-        {/* Logo Section */}
+      <StatusBar barStyle="light-content" backgroundColor="#0A0F2C" />
+
+      <View
+        style={[
+          styles.container,
+          { paddingTop: insets.top + 20 },
+        ]}
+      >
+        {/* Logo */}
         <View style={styles.logoContainer}>
           <View style={styles.pulseWrapper}>
             <Animated.View
@@ -61,87 +106,90 @@ const LoginScreen = ({ navigation, setUser, setRole }: any) => {
               <Activity color="#fff" size={32} strokeWidth={2.5} />
             </View>
           </View>
-  
+
           <Text style={styles.appName}>MediRide</Text>
           <View style={styles.underline} />
         </View>
-  
-        {/* Welcome Text */}
+
+        {/* Welcome */}
         <View style={styles.welcomeContainer}>
           <Text style={styles.welcome}>Welcome Back</Text>
           <Text style={styles.subText}>
             Emergency help is one tap away
           </Text>
         </View>
-  
-        {/* Phone Input */}
+
+        {/* Email */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Phone Number</Text>
-  
-          <View style={styles.phoneRow}>
-            <View style={styles.countryCode}>
-              <Text style={styles.textWhite}>+91</Text>
-            </View>
-  
-            <TextInput
-              placeholder="Enter mobile number"
-              placeholderTextColor="#6B7280"
-              keyboardType="phone-pad"
-              value={phone}
-              onChangeText={setPhone}
-              style={styles.input}
-            />
-          </View>
+          <Text style={styles.label}>Email</Text>
+
+          <TextInput
+            placeholder="Enter email"
+            placeholderTextColor="#6B7280"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            style={styles.input}
+          />
         </View>
-  
+
+        {/* Password */}
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Password</Text>
+
+          <TextInput
+            placeholder="Enter password"
+            placeholderTextColor="#6B7280"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+          />
+        </View>
+
         {/* CTA */}
         <Pressable
-          onPress={() => {
-            if (phone === '9999999999') {
-              setUser({ uid: '123', role: 'driver' });
-              setRole('driver');
-            } else {
-              setUser({ uid: '123', role: 'user' });
-              setRole('user');
-            }
-            navigation.replace('Home');
-          }}
-          style={({ pressed }) => [ 
+          onPress={handleLogin}
+          style={({ pressed }) => [
             styles.button,
             {
               transform: [{ scale: pressed ? 0.98 : 1 }],
               opacity: isValid ? 1 : 0.5,
             },
           ]}
-          disabled={!isValid}
+          disabled={!isValid || loading}
         >
-          <Text style={styles.buttonText}>Send OTP</Text>
+          {
+            loading ? (
+              <ActivityIndicator size={"small"} color={"#fff"} />
+            ) : <Text style={styles.buttonText}>Login</Text>
+          }
+          
         </Pressable>
-  
+
         {/* Divider */}
         <View style={styles.dividerRow}>
           <View style={styles.line} />
           <Text style={styles.dividerText}>or continue with</Text>
           <View style={styles.line} />
         </View>
-  
-        {/* Google Button */}
+
+        {/* Google (future) */}
         <TouchableOpacity style={styles.googleButton}>
           <Text style={styles.googleText}>Continue with Google</Text>
         </TouchableOpacity>
-  
+
         {/* Register */}
         <View style={styles.footer}>
-        <Text style={styles.footerText}>
-          <Text style={styles.subText}>New user? </Text>
-          <Text
-            style={styles.register}
-            suppressHighlighting={false}
-            onPress={() => navigation.navigate('Signup')}
-          >
-            Register
+          <Text style={styles.footerText}>
+            <Text style={styles.subText}>New user? </Text>
+            <Text
+              style={styles.register}
+              onPress={() => navigation.navigate('Signup')}
+            >
+              Register
+            </Text>
           </Text>
-        </Text>
         </View>
       </View>
     </SafeAreaView>
@@ -240,10 +288,12 @@ const styles = StyleSheet.create({
   },
 
   input: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: '#141929',
     borderRadius: 12,
     paddingHorizontal: 16,
+    // height: 100,
+    paddingVertical: 12,
     color: '#FFFFFF',
   },
 
