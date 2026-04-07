@@ -1,3 +1,5 @@
+// UPDATED SignupScreen.tsx
+
 import React, { useState } from 'react';
 import {
   View,
@@ -28,6 +30,9 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // 🏥 Hospital specific
+  const [hospitalLocation, setHospitalLocation] = useState('');
+
   // 🔹 Optional fields
   const [aadhaar, setAadhaar] = useState('');
   const [emergencyName, setEmergencyName] = useState('');
@@ -37,9 +42,8 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertType, setAlertType] = useState<'success' | 'error'>('success');
   const [alertMessage, setAlertMessage] = useState('');
-  const [signedUpUser, setSignedUpUser] = useState<any>()
+  const [signedUpUser, setSignedUpUser] = useState<any>();
 
-  // 🔥 Reusable Input
   const renderInput = (
     label: string,
     placeholder: string,
@@ -64,66 +68,90 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
 
   const handleAlertClose = () => {
     setAlertVisible(false);
-  
+
     if (alertType === 'success') {
       setUser(signedUpUser);
       setRole(customerRole);
-      // Navigate after success
-      // navigation.goBack(); // or navigate to home/login depending on flow
     }
   };
 
-  // 🔥 Signup Handler
   const handleSignup = async () => {
     try {
-      if (!fullName || !phone || !email || !password) {
-        setAlertType('error');
-        setAlertMessage('Please fill all required fields');
-        setAlertVisible(true);
-        return;
+      // 🔥 Validation
+      if (customerRole === 'hospital') {
+        if (!fullName || !hospitalLocation || !email || !password) {
+          setAlertType('error');
+          setAlertMessage('Please fill all hospital details');
+          setAlertVisible(true);
+          return;
+        }
+      } else {
+        if (!fullName || !phone || !email || !password) {
+          setAlertType('error');
+          setAlertMessage('Please fill all required fields');
+          setAlertVisible(true);
+          return;
+        }
       }
-      
+
       if (!customerRole) {
         setAlertType('error');
         setAlertMessage('Please select a role');
         setAlertVisible(true);
         return;
       }
-  
-      setLoading(true); // 🔥 start loader
-  
+
+      setLoading(true);
+
       const userCredential = await auth().createUserWithEmailAndPassword(
         email.trim(),
         password
       );
-  
+
       const user = userCredential.user;
-      setSignedUpUser(user)
-  
-      await firestore().collection('users').doc(user.uid).set({
-        fullName,
-        phoneNumber: phone,
+      setSignedUpUser(user);
+
+      // 🔥 Firestore payload (role-based)
+      let payload: any = {
         email: email.trim(),
-        aadhaar,
-        emergencyContact: {
-          name: emergencyName,
-          phone: emergencyPhone,
-        },
-        hasInsurance,
         role: customerRole,
         createdAt: firestore.FieldValue.serverTimestamp(),
-      });
-  
+      };
+
+      if (customerRole === 'hospital') {
+        payload = {
+          ...payload,
+          hospitalName: fullName,
+          location: hospitalLocation,
+          bedCount: 0,
+          doctorCount: 0,
+          isVerified: false,
+        };
+      } else {
+        payload = {
+          ...payload,
+          fullName,
+          phoneNumber: phone,
+          aadhaar,
+          emergencyContact: {
+            name: emergencyName,
+            phone: emergencyPhone,
+          },
+          hasInsurance,
+        };
+      }
+
+      await firestore().collection('users').doc(user.uid).set(payload);
+
       setAlertType('success');
       setAlertMessage('Account created successfully!');
       setAlertVisible(true);
 
-  
     } catch (error: any) {
       console.log('Signup error:', error.message);
-    
+
       let message = 'Something went wrong. Please try again.';
-    
+
       if (error.code === 'auth/email-already-in-use') {
         message = 'Email already in use';
       } else if (error.code === 'auth/invalid-email') {
@@ -131,12 +159,12 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
       } else if (error.code === 'auth/weak-password') {
         message = 'Password should be at least 6 characters';
       }
-    
+
       setAlertType('error');
       setAlertMessage(message);
       setAlertVisible(true);
     } finally {
-      setLoading(false); // 🔥 stop loader
+      setLoading(false);
     }
   };
 
@@ -165,7 +193,7 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
 
         {/* Tabs */}
         <View style={styles.tabWrapper}>
-        {['user', 'driver', 'hospital'].map((tab: any) => (
+          {['user', 'driver', 'hospital'].map((tab: any) => (
             <Pressable
               key={tab}
               onPress={() => setCustomerRole(tab)}
@@ -188,78 +216,76 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
 
         <ScrollView showsVerticalScrollIndicator={false}>
 
-          {/* Profile */}
-          <View style={styles.profileContainer}>
-            <View style={styles.profileCircle}>
-              <Camera color="#6B7280" size={28} />
-              <View style={styles.addBtn}>
-                <Text style={{ color: '#fff' }}>+</Text>
+          {/* 🏥 HOSPITAL FLOW */}
+          {customerRole === 'hospital' ? (
+            <>
+              {renderInput('Hospital Name *', 'Enter hospital name', fullName, setFullName)}
+              {renderInput('Location *', 'Enter hospital location', hospitalLocation, setHospitalLocation)}
+              {renderInput('Email *', 'Enter email', email, setEmail, 'email-address')}
+              {renderInput('Password *', 'Enter password', password, setPassword, 'default', true)}
+            </>
+          ) : (
+            <>
+              {/* 🔥 ORIGINAL FLOW (UNCHANGED) */}
+              {renderInput('Full Name *', 'Enter your full name', fullName, setFullName)}
+              {renderInput('Phone Number *', 'Enter mobile number', phone, setPhone, 'phone-pad')}
+              {renderInput('Email *', 'Enter your email', email, setEmail, 'email-address')}
+              {renderInput('Password *', 'Enter password', password, setPassword, 'default', true)}
+
+              {renderInput('Aadhaar / PAN Number', 'Enter Aadhaar or PAN', aadhaar, setAadhaar)}
+              {renderInput('Emergency Contact Name', 'Enter contact name', emergencyName, setEmergencyName)}
+              {renderInput('Emergency Contact Number', 'Enter contact number', emergencyPhone, setEmergencyPhone, 'phone-pad')}
+
+              <View style={styles.section}>
+                <View style={styles.toggleRow}>
+                  <Text style={styles.label}>Health Insurance</Text>
+
+                  <Pressable
+                    onPress={() => setHasInsurance(!hasInsurance)}
+                    style={[
+                      styles.toggle,
+                      hasInsurance && { backgroundColor: '#34C759' },
+                    ]}
+                  >
+                    <View
+                      style={[
+                        styles.toggleCircle,
+                        { transform: [{ translateX: hasInsurance ? 22 : 2 }] },
+                      ]}
+                    />
+                  </Pressable>
+                </View>
+
+                {hasInsurance && (
+                  <View style={styles.input}>
+                    <Text style={{ color: '#6B7280' }}>
+                      Insurance provider (dropdown later)
+                    </Text>
+                  </View>
+                )}
               </View>
-            </View>
-          </View>
-
-          {/* 🔥 REQUIRED FIELDS */}
-          {renderInput('Full Name *', 'Enter your full name', fullName, setFullName)}
-
-          {renderInput('Phone Number *', 'Enter mobile number', phone, setPhone, 'phone-pad')}
-
-          {renderInput('Email *', 'Enter your email', email, setEmail, 'email-address')}
-
-          {renderInput('Password *', 'Enter password', password, setPassword, 'default', true)}
-
-          {/* OPTIONAL */}
-          {renderInput('Aadhaar / PAN Number', 'Enter Aadhaar or PAN', aadhaar, setAadhaar)}
-
-          {renderInput('Emergency Contact Name', 'Enter contact name', emergencyName, setEmergencyName)}
-
-          {renderInput('Emergency Contact Number', 'Enter contact number', emergencyPhone, setEmergencyPhone, 'phone-pad')}
-
-          {/* Insurance */}
-          <View style={styles.section}>
-            <View style={styles.toggleRow}>
-              <Text style={styles.label}>Health Insurance</Text>
-
-              <Pressable
-                onPress={() => setHasInsurance(!hasInsurance)}
-                style={[
-                  styles.toggle,
-                  hasInsurance && { backgroundColor: '#34C759' },
-                ]}
-              >
-                <View
-                  style={[
-                    styles.toggleCircle,
-                    { transform: [{ translateX: hasInsurance ? 22 : 2 }] },
-                  ]}
-                />
-              </Pressable>
-            </View>
-
-            {hasInsurance && (
-              <View style={styles.input}>
-                <Text style={{ color: '#6B7280' }}>
-                  Insurance provider (dropdown later)
-                </Text>
-              </View>
-            )}
-          </View>
+            </>
+          )}
 
           {/* Warning */}
-          <View style={styles.warning}>
-            <AlertTriangle color="#FFB800" size={18} />
-            <Text style={styles.warningText}>
-              False emergency requests may result in penalties
-            </Text>
-          </View>
+          {
+            customerRole === "user" && (
+              <View style={styles.warning}>
+                <AlertTriangle color="#FFB800" size={18} />
+                <Text style={styles.warningText}>
+                  False emergency requests may result in penalties
+                </Text>
+              </View>
+            )
+          }
 
           {/* CTA */}
           <Pressable style={styles.button} onPress={handleSignup} disabled={loading}>
-            {
-              loading ? (
-                <ActivityIndicator size={"small"} color={"#fff"} />
-              ) : <Text style={styles.buttonText}>Create Account</Text>
-            }
-            
+            {loading ? (
+              <ActivityIndicator size={"small"} color={"#fff"} />
+            ) : (
+              <Text style={styles.buttonText}>Create Account</Text>
+            )}
           </Pressable>
 
         </ScrollView>
@@ -269,6 +295,8 @@ const SignupScreen = ({ navigation, setUser, setRole }: any) => {
 };
 
 export default SignupScreen;
+
+// styles unchanged
 
 const styles = StyleSheet.create({
     safeArea: {

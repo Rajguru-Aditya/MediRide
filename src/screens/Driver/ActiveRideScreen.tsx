@@ -7,6 +7,7 @@ import {
   Pressable,
   Alert,
   Linking,
+  BackHandler
 } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,6 +15,9 @@ import { Phone, Navigation } from 'lucide-react-native';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import { getCurrentLocation } from '../../utils/location';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 const DARK_MAP_STYLE = [
   { elementType: 'geometry',           stylers: [{ color: '#0A0F2C' }] },
@@ -55,7 +59,7 @@ function generateWaypoints(
   return points;
 }
 
-const SIMULATION_STEPS    = 30;   // total waypoints from start → pickup
+const SIMULATION_STEPS    = 150;   // total waypoints from start → pickup
 const STEP_INTERVAL_MS    = 2000; // move one step every 2 seconds
 
 const ActiveRideScreen = ({ navigation, route }: any) => {
@@ -77,6 +81,62 @@ const ActiveRideScreen = ({ navigation, route }: any) => {
   const simIntervalRef  = useRef<any>(null);
   const etaIntervalRef  = useRef<any>(null);
   const watchActive     = useRef(true);
+
+  // ...
+
+  useEffect(() => {
+    if (!rideId) return;
+  
+    const unsub = firestore()
+      .collection('rides')
+      .doc(rideId)
+      .onSnapshot(doc => {
+        const data = doc.data();
+        if (!data) return;
+  
+        setRideStatus(data.status);
+        // also restore pickupCoords, etc if needed
+      });
+  
+    return unsub;
+  }, [rideId]);
+  
+  React.useEffect(() => {
+    const onBackPress = () => {
+      Alert.alert(
+        'Exit App',
+        'Do you want to exit?',
+        [
+          {
+            text: 'Cancel',
+            onPress: () => {
+              // Do nothing
+            },
+            style: 'cancel',
+          },
+          { text: 'YES', onPress: () => BackHandler.exitApp() },
+        ],
+        { cancelable: false }
+      );
+  
+      return true;
+    };
+  
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress
+    );
+  
+    return () => backHandler.remove();
+  }, []);
+
+  useEffect(() => {
+
+    navigation.setOptions({
+      headerLeft: () => null,
+      gestureEnabled: false,
+    });
+  }, []);
 
   // ─── On mount: get real GPS → build waypoints → start sim ────
   useEffect(() => {
@@ -242,11 +302,15 @@ const ActiveRideScreen = ({ navigation, route }: any) => {
       await firestore().collection('rides').doc(rideId).update({ status: nextStatus });
       setRideStatus(nextStatus);
 
+      if (nextStatus !== 'completed') {
+        await AsyncStorage.setItem('ACTIVE_RIDE_ID', rideId);
+      }
 
       if (nextStatus === 'completed') {
         watchActive.current = false;
         clearInterval(simIntervalRef.current);
         clearInterval(etaIntervalRef.current);
+        await AsyncStorage.removeItem('ACTIVE_RIDE_ID');
         navigation.reset({ index: 0, routes: [{ name: 'DriverHome' }] });
       }
     } catch (e) {

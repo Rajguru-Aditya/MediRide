@@ -3,11 +3,12 @@ import AuthNavigator from './AuthNavigator';
 import DriverNavigator from './DriverNavigator';
 import UserNavigator from './UserNavigator';
 import BootSplash from "react-native-bootsplash";
+import HospitalNavigator from './HospitalNavigator';
 
 
 const AppNavigator = () => {
   const [user, setUser] = useState<any>(null);
-  const [role, setRole] = useState<'user' | 'driver' | null>(null);
+  const [role, setRole] = useState<'user' | 'driver' | 'hospital' | null>(null);
 
 //   useEffect(() => {
 //     // TEMP MOCK (we'll replace with Firebase)
@@ -36,6 +37,8 @@ const AppNavigator = () => {
 
   if (role === 'driver') {
     return <DriverNavigator user={user} setUser={setUser} setRole={setRole} key="driver"/>
+  } else if (role === 'hospital') {
+    return <HospitalNavigator user={user} setUser={setUser} setRole={setRole} key="driver"/>
   }
 
   return <UserNavigator user={user} setUser={setUser} setRole={setRole}     key="user"/>;

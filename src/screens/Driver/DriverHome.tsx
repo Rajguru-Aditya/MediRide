@@ -16,6 +16,7 @@ import { Home, ClipboardList, History, User, X } from 'lucide-react-native';
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import { getCurrentLocation } from '../../utils/location';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Condition id → label
 const CONDITION_LABELS: Record<string, string> = {
@@ -210,6 +211,35 @@ useEffect(() => {
 
   fetchLocation();
 }, [currentUser, isOnline]);
+
+useEffect(() => {
+  const checkActiveRide = async () => {
+    const rideId = await AsyncStorage.getItem('ACTIVE_RIDE_ID');
+
+    if (rideId) {
+      const rideDoc = await firestore().collection('rides').doc(rideId).get();
+
+      if (rideDoc.data()?.status !== 'completed') {
+        navigation.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'ActiveRide',
+              params: {
+                rideId,
+                ...rideDoc.data(),
+              },
+            },
+          ],
+        });
+      } else {
+        await AsyncStorage.removeItem('ACTIVE_RIDE_ID');
+      }
+    }
+  };
+
+  checkActiveRide();
+}, []);
 
   // ─── Accept incoming ride ─────────────────────────────────────
   const acceptIncoming = async () => {

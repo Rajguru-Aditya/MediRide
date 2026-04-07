@@ -58,8 +58,12 @@ const ProfileScreen = ({ navigation, setUser, setRole }: any) => {
   };
 
   const getInitial = () => {
-    if (!userData?.fullName) return '?';
-    return userData.fullName.charAt(0).toUpperCase();
+    if (!userData?.fullName && !userData?.hospitalName) return '?';
+    if(userData?.hospitalName){
+      return userData.hospitalName.charAt(0).toUpperCase();
+    } else {
+      return userData.fullName.charAt(0).toUpperCase();
+    }
   };
 
   if (loading) {
@@ -92,18 +96,24 @@ const ProfileScreen = ({ navigation, setUser, setRole }: any) => {
         <View style={styles.card}>
           <Text style={styles.label}>Full Name</Text>
           <Text style={styles.value}>
-            {userData?.fullName || 'N/A'}
+            {userData?.fullName || userData?.hospitalName || 'N/A'}
           </Text>
-
+          
           <Text style={styles.label}>Email</Text>
           <Text style={styles.value}>
             {userData?.email || 'N/A'}
           </Text>
 
-          <Text style={styles.label}>Phone</Text>
-          <Text style={styles.value}>
-            {userData?.phoneNumber || 'N/A'}
-          </Text>
+          {
+            userData?.role !== "hospital" && (
+              <>
+                <Text style={styles.label}>Phone</Text>
+                <Text style={styles.value}>
+                  {userData?.phoneNumber || 'N/A'}
+                </Text>
+              </>
+            )
+          }
 
           <Text style={styles.label}>Role</Text>
           <Text style={styles.value}>
