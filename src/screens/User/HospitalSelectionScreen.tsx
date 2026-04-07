@@ -1,69 +1,72 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, Pressable,
   ScrollView, StatusBar, Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Star, MapPin, Bed, Navigation } from 'lucide-react-native';
+import firestore from '@react-native-firebase/firestore';
+
 
 // All hospitals hardcoded — swap with Firestore fetch later
-const HOSPITALS = [
-  {
-    id: 'lilavati',
-    name: 'Lilavati Hospital',
-    distance: '2.3 km',
-    beds: 12,
-    icuBeds: 4,
-    rating: 4.8,
-    recommended: true,
-    type: 'ALS Ambulance',
-    fare: '₹2,500 - ₹3,500',
-  },
-  {
-    id: 'breach',
-    name: 'Breach Candy Hospital',
-    distance: '3.7 km',
-    beds: 8,
-    icuBeds: 2,
-    rating: 4.6,
-    recommended: false,
-    type: 'BLS Ambulance',
-    fare: '₹1,200 - ₹1,800',
-  },
-  {
-    id: 'jaslok',
-    name: 'Jaslok Hospital',
-    distance: '4.1 km',
-    beds: 3,
-    icuBeds: 1,
-    rating: 4.7,
-    recommended: false,
-    type: 'ALS Ambulance',
-    fare: '₹2,500 - ₹3,500',
-  },
-  {
-    id: 'kokilaben',
-    name: 'Kokilaben Hospital',
-    distance: '5.2 km',
-    beds: 15,
-    icuBeds: 6,
-    rating: 4.9,
-    recommended: false,
-    type: 'ICU Ambulance',
-    fare: '₹4,000 - ₹6,000',
-  },
-  {
-    id: 'hinduja',
-    name: 'Hinduja Hospital',
-    distance: '6.0 km',
-    beds: 10,
-    icuBeds: 3,
-    rating: 4.5,
-    recommended: false,
-    type: 'BLS Ambulance',
-    fare: '₹1,200 - ₹1,800',
-  },
-];
+// const HOSPITALS = [
+//   {
+//     id: 'lilavati',
+//     name: 'Lilavati Hospital',
+//     distance: '2.3 km',
+//     beds: 12,
+//     icuBeds: 4,
+//     rating: 4.8,
+//     recommended: true,
+//     type: 'ALS Ambulance',
+//     fare: '₹2,500 - ₹3,500',
+//   },
+//   {
+//     id: 'breach',
+//     name: 'Breach Candy Hospital',
+//     distance: '3.7 km',
+//     beds: 8,
+//     icuBeds: 2,
+//     rating: 4.6,
+//     recommended: false,
+//     type: 'BLS Ambulance',
+//     fare: '₹1,200 - ₹1,800',
+//   },
+//   {
+//     id: 'jaslok',
+//     name: 'Jaslok Hospital',
+//     distance: '4.1 km',
+//     beds: 3,
+//     icuBeds: 1,
+//     rating: 4.7,
+//     recommended: false,
+//     type: 'ALS Ambulance',
+//     fare: '₹2,500 - ₹3,500',
+//   },
+//   {
+//     id: 'kokilaben',
+//     name: 'Kokilaben Hospital',
+//     distance: '5.2 km',
+//     beds: 15,
+//     icuBeds: 6,
+//     rating: 4.9,
+//     recommended: false,
+//     type: 'ICU Ambulance',
+//     fare: '₹4,000 - ₹6,000',
+//   },
+//   {
+//     id: 'hinduja',
+//     name: 'Hinduja Hospital',
+//     distance: '6.0 km',
+//     beds: 10,
+//     icuBeds: 3,
+//     rating: 4.5,
+//     recommended: false,
+//     type: 'BLS Ambulance',
+//     fare: '₹1,200 - ₹1,800',
+//   },
+// ];
 
 const HospitalSelectionScreen = ({ navigation, route }: any) => {
   const insets = useSafeAreaInsets();
@@ -79,10 +82,52 @@ const HospitalSelectionScreen = ({ navigation, route }: any) => {
     coords,
   } = route.params ?? {};
 
-  const [selectedId, setSelectedId] = useState('lilavati');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hospitals, setHospitals] = useState<any[]>([]);
+  const [loadingHospitals, setLoadingHospitals] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = firestore()
+      .collection('users')
+      .where('role', '==', 'hospital')
+      .onSnapshot(snapshot => {
+        const list: any[] = [];
+  
+        snapshot.forEach(doc => {
+          const data = doc.data();
+  
+          list.push({
+            id: doc.id,
+            name: data.hospitalName,
+            beds: data.availableBeds || 0,
+            icuBeds: data.icuBeds || 0,
+            doctors: data.doctorCount || 0,
+            emergencyAvailable: data.emergencyAvailable ?? true,
+  
+            // Temporary placeholders (we’ll improve later)
+            distance: '2-5 km',
+            rating: 4.5,
+            recommended: data.emergencyAvailable && (data.availableBeds > 20), // simple logic
+            type: 'ALS Ambulance',
+            fare: '₹1500 - ₹3000',
+          });
+        });
+  
+        setHospitals(list);
+        setLoadingHospitals(false);
+      });
+  
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    if (hospitals.length > 0 && !selectedId) {
+      setSelectedId(hospitals[0].id);
+    }
+  }, [hospitals]);
 
   const handleConfirm = () => {
-    const hospital = HOSPITALS.find(h => h.id === selectedId);
+    const hospital = hospitals.find(h => h.id === selectedId);
     if (!hospital) return Alert.alert('Select a hospital first');
 
     // Pass the full booking data to ConfirmationScreen
@@ -98,8 +143,16 @@ const HospitalSelectionScreen = ({ navigation, route }: any) => {
     });
   };
 
-  const recommended = HOSPITALS.filter(h => h.recommended);
-  const others = HOSPITALS.filter(h => !h.recommended);
+  const recommended = hospitals.filter(h => h.recommended);
+  const others = hospitals.filter(h => !h.recommended);
+
+  if (loadingHospitals) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size={"small"} color={"#fff"} />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>

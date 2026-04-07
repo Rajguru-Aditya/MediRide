@@ -13,6 +13,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import firestore from '@react-native-firebase/firestore';
 import auth from '@react-native-firebase/auth';
 import { Home, User } from 'lucide-react-native';
+import CustomAlert from '../../components/CustomAlert';
 
 const HospitalDashboardScreen = ({navigation}:any) => {
   const insets = useSafeAreaInsets();
@@ -29,6 +30,10 @@ const HospitalDashboardScreen = ({navigation}:any) => {
   const [doctors, setDoctors] = useState('');
 
   const [emergencyAvailable, setEmergencyAvailable] = useState(true);
+
+  const [alertVisible, setAlertVisible] = useState(false);
+    const [alertType, setAlertType] = useState<'success' | 'error'>('success');
+    const [alertMessage, setAlertMessage] = useState('');
 
   const uid = auth().currentUser?.uid;
 
@@ -62,10 +67,10 @@ const HospitalDashboardScreen = ({navigation}:any) => {
   // 🔥 Save data
   const handleSave = async () => {
     if (!uid) return;
-
+  
     try {
       setSaving(true);
-
+  
       await firestore().collection('users').doc(uid).update({
         totalBeds: Number(totalBeds) || 0,
         availableBeds: Number(availableBeds) || 0,
@@ -74,9 +79,20 @@ const HospitalDashboardScreen = ({navigation}:any) => {
         emergencyAvailable,
         updatedAt: firestore.FieldValue.serverTimestamp(),
       });
-
+  
+      // ✅ SUCCESS ALERT
+      setAlertType('success');
+      setAlertMessage('Hospital data updated successfully');
+      setAlertVisible(true);
+  
     } catch (e) {
       console.log('Save error:', e);
+  
+      // ❌ ERROR ALERT
+      setAlertType('error');
+      setAlertMessage('Failed to save data. Please try again.');
+      setAlertVisible(true);
+  
     } finally {
       setSaving(false);
     }
@@ -110,6 +126,12 @@ const HospitalDashboardScreen = ({navigation}:any) => {
 
   return (
     <View style={{ flex: 1 }}>
+        <CustomAlert
+        visible={alertVisible}
+        type={alertType}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+        />
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#0A0F2C" />
 

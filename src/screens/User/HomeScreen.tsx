@@ -34,6 +34,7 @@ const HomeScreen = ({ navigation, user }: any) => {
 
   const [userData, setUserData] = useState<any>(null);
   const [locationName, setLocationName] = useState<string>('Fetching...');
+  const [nearbyHospitals, setNearbyHospitals] = useState<any[]>([]);
 
   // Pulse rings — 3 layers for depth
   const ring1 = useRef(new Animated.Value(0)).current;
@@ -101,6 +102,40 @@ const HomeScreen = ({ navigation, user }: any) => {
 
     fetchLocation();
   }, [user]);
+
+  useEffect(() => {
+    const unsubscribe = firestore()
+      .collection('users')
+      .where('role', '==', 'hospital')
+      .onSnapshot(snapshot => {
+        const list: any[] = [];
+  
+        snapshot.forEach(doc => {
+          const data = doc.data();
+  
+          list.push({
+            id: doc.id,
+            name: data.hospitalName || 'Hospital',
+            beds: data.availableBeds || 0,
+            rating: 4.5, // placeholder
+            distance: '2-5 km', // placeholder
+            available: (data.availableBeds || 0) > 0 && data.emergencyAvailable,
+          });
+        });
+  
+        // 🔥 Sort (important UX)
+        list.sort((a, b) => {
+          if (a.available !== b.available) {
+            return b.available - a.available;
+          }
+          return b.beds - a.beds;
+        });
+  
+        setNearbyHospitals(list);
+      });
+  
+    return unsubscribe;
+  }, []);
 
   // ─── SOS Pulse animation ─────────────────────────────────────────
   useEffect(() => {
@@ -171,30 +206,6 @@ const HomeScreen = ({ navigation, user }: any) => {
     },
   ];
 
-  const nearbyHospitals = [
-    {
-      name: 'Lilavati Hospital',
-      distance: '2.3 km',
-      beds: 12,
-      rating: 4.8,
-      available: true,
-    },
-    {
-      name: 'Breach Candy',
-      distance: '3.7 km',
-      beds: 8,
-      rating: 4.6,
-      available: true,
-    },
-    {
-      name: 'Jaslok Hospital',
-      distance: '4.1 km',
-      beds: 3,
-      rating: 4.7,
-      available: false,
-    },
-  ];
-
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="light-content" backgroundColor="#0A0F2C" />
@@ -206,10 +217,10 @@ const HomeScreen = ({ navigation, user }: any) => {
           <Text style={styles.locationText}>{locationName}</Text>
         </View>
 
-        <View style={styles.bellWrapper}>
+        {/* <View style={styles.bellWrapper}>
           <Bell color="#fff" size={22} />
           <View style={styles.notificationDot} />
-        </View>
+        </View> */}
       </View>
 
       <ScrollView
@@ -280,9 +291,9 @@ const HomeScreen = ({ navigation, user }: any) => {
         {/* ── Nearby Hospitals ── */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Nearby Hospitals</Text>
-          <Pressable>
+          {/* <Pressable>
             <Text style={styles.seeAll}>See all</Text>
-          </Pressable>
+          </Pressable> */}
         </View>
 
         <ScrollView
