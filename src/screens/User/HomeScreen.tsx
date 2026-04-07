@@ -96,7 +96,7 @@ const HomeScreen = ({ navigation, user }: any) => {
           });
       } catch (err) {
         console.log('Location error:', err);
-        setLocationName('Mumbai');
+        setLocationName('Unknown');
       }
     };
 

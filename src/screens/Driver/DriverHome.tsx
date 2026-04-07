@@ -174,7 +174,7 @@ useEffect(() => {
         `https://nominatim.openstreetmap.org/reverse?lat=${coords.latitude}&lon=${coords.longitude}&format=json`,
         {
           headers: {
-            'User-Agent': 'RapidAid/1.0 (college project)',
+            'User-Agent': 'MediRide/1.0',
             'Accept': 'application/json',
           },
         }
@@ -187,7 +187,7 @@ useEffect(() => {
         data?.address?.suburb ||
         data?.address?.neighbourhood ||
         data?.address?.city ||
-        'Mumbai'
+        'Unknown'
       );
 
       await firestore()
@@ -205,7 +205,7 @@ useEffect(() => {
         );
 
     } catch {
-      setLocationName('Mumbai');
+      setLocationName('Unknown');
     }
   };
 

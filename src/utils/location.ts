@@ -16,7 +16,7 @@ export const requestLocationPermission = async (): Promise<boolean> => {
       PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
       {
         title: 'Location Permission',
-        message: 'RapidAid needs your location to find nearby ambulances and hospitals.',
+        message: 'MediRide needs your location to find nearby ambulances and hospitals.',
         buttonNeutral: 'Ask Me Later',
         buttonNegative: 'Deny',
         buttonPositive: 'Allow',
@@ -28,7 +28,7 @@ export const requestLocationPermission = async (): Promise<boolean> => {
     if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
       Alert.alert(
         'Location Required',
-        'Please enable location permission in Settings to use RapidAid.',
+        'Please enable location permission in Settings to use MediRide.',
         [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Open Settings', onPress: () => Linking.openSettings() },

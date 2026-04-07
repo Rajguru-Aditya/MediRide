@@ -113,7 +113,7 @@ const BookAmbulanceScreen = ({ navigation }: any) => {
         setCoords(position);
         const res = await fetch(
           `https://nominatim.openstreetmap.org/reverse?lat=${position.latitude}&lon=${position.longitude}&format=json`,
-          { headers: { 'User-Agent': 'RapidAid/1.0 (college project)', 'Accept': 'application/json' } }
+          { headers: { 'User-Agent': 'MediRide/1.0', 'Accept': 'application/json' } }
         );
         const data = JSON.parse(await res.text());
         setPickupLabel(

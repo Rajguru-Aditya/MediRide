@@ -31,7 +31,7 @@ const STATUS_CONFIG: Record<RideStatus, { label: string; color: string; sub: str
   accepted:  { label: 'Driver assigned!',          color: '#34C759', sub: 'Ambulance is on the way to you' },
   en_route:  { label: 'Ambulance en route',        color: '#FF3B30', sub: 'Your ambulance is heading to you' },
   arrived:   { label: 'Ambulance arrived!',        color: '#34C759', sub: 'Your driver is at the pickup location' },
-  completed: { label: 'Ride completed',            color: '#8A8FA8', sub: 'Thank you for using RapidAid' },
+  completed: { label: 'Ride completed',            color: '#8A8FA8', sub: 'Thank you for using MediRide' },
 };
 
 const UserTrackingScreen = ({ navigation, route }: any) => {
@@ -265,7 +265,7 @@ const UserTrackingScreen = ({ navigation, route }: any) => {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.driverName}>{driverName || 'Driver assigned'}</Text>
-              <Text style={styles.driverSub}>Ambulance Driver · RapidAid</Text>
+              <Text style={styles.driverSub}>Ambulance Driver · MediRide</Text>
             </View>
             <Pressable style={styles.callBtn}>
               <Phone size={16} color="#fff" />

@@ -62,6 +62,20 @@ function generateWaypoints(
 const SIMULATION_STEPS    = 150;   // total waypoints from start → pickup
 const STEP_INTERVAL_MS    = 2000; // move one step every 2 seconds
 
+type Coord = { latitude: number; longitude: number };
+
+function haversineKm(a: Coord, b: Coord): number {
+  const R = 6371;
+  const dLat = ((b.latitude  - a.latitude)  * Math.PI) / 180;
+  const dLon = ((b.longitude - a.longitude) * Math.PI) / 180;
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((a.latitude  * Math.PI) / 180) *
+    Math.cos((b.latitude  * Math.PI) / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+
 const ActiveRideScreen = ({ navigation, route }: any) => {
   const insets = useSafeAreaInsets();
   const mapRef = useRef<MapView>(null);
@@ -153,9 +167,11 @@ const ActiveRideScreen = ({ navigation, route }: any) => {
         waypointsRef.current = waypoints;
 
         // Calculate initial ETA (seconds = steps × interval)
-        const totalSeconds = SIMULATION_STEPS * (STEP_INTERVAL_MS / 1000);
-        setEtaSeconds(totalSeconds);
-        setEta(formatEta(totalSeconds));
+        // const totalSeconds = SIMULATION_STEPS * (STEP_INTERVAL_MS / 1000);
+        // setEtaSeconds(totalSeconds);
+        // setEta(formatEta(totalSeconds));
+
+
 
         // Set initial position
         setDriverLocation(waypoints[0]);
@@ -189,10 +205,21 @@ const ActiveRideScreen = ({ navigation, route }: any) => {
     return () => {
       watchActive.current = false;
       clearInterval(simIntervalRef.current);
-      clearInterval(etaIntervalRef.current);
+      // clearInterval(etaIntervalRef.current);
       unsubscribe();
     };
   }, [rideId]);
+
+  useEffect(() => {
+    if (!driverLocation || !pickupCoords) return;
+  
+    const distKm = haversineKm(driverLocation, pickupCoords);
+  
+    // Same speed assumption as user (30 km/h)
+    const minutes = Math.round((distKm / 30) * 60);
+  
+    setEta(minutes <= 1 ? 'Arriving now' : `${minutes} min`);
+  }, [driverLocation, pickupCoords]);
 
   // ─── Start simulation loop once waypoints are ready ──────────
   useEffect(() => {
@@ -205,7 +232,7 @@ const ActiveRideScreen = ({ navigation, route }: any) => {
       if (nextIndex >= waypointsRef.current.length) {
         // Reached pickup — snap to exact pickup coords
         clearInterval(simIntervalRef.current);
-        clearInterval(etaIntervalRef.current);
+        // clearInterval(etaIntervalRef.current);
         setDriverLocation(pickupCoords);
         setEta('Arriving now');
         await writeLocation(pickupCoords, rideId);
@@ -228,23 +255,23 @@ const ActiveRideScreen = ({ navigation, route }: any) => {
       await writeLocation(loc, rideId);
     }, STEP_INTERVAL_MS);
 
-    // ETA countdown — tick every second
-    etaIntervalRef.current = setInterval(() => {
-      setEtaSeconds(prev => {
-        const next = prev - 1;
-        if (next <= 0) {
-          clearInterval(etaIntervalRef.current);
-          setEta('Arriving now');
-          return 0;
-        }
-        setEta(formatEta(next));
-        return next;
-      });
-    }, 1000);
+    // // ETA countdown — tick every second
+    // etaIntervalRef.current = setInterval(() => {
+    //   setEtaSeconds(prev => {
+    //     const next = prev - 1;
+    //     if (next <= 0) {
+    //       clearInterval(etaIntervalRef.current);
+    //       setEta('Arriving now');
+    //       return 0;
+    //     }
+    //     setEta(formatEta(next));
+    //     return next;
+    //   });
+    // }, 1000);
 
     return () => {
       clearInterval(simIntervalRef.current);
-      clearInterval(etaIntervalRef.current);
+      // clearInterval(etaIntervalRef.current);
     };
   }, [simReady, simulationStarted]);
 
@@ -309,7 +336,7 @@ const ActiveRideScreen = ({ navigation, route }: any) => {
       if (nextStatus === 'completed') {
         watchActive.current = false;
         clearInterval(simIntervalRef.current);
-        clearInterval(etaIntervalRef.current);
+        // clearInterval(etaIntervalRef.current);
         await AsyncStorage.removeItem('ACTIVE_RIDE_ID');
         navigation.reset({ index: 0, routes: [{ name: 'DriverHome' }] });
       }
@@ -444,20 +471,20 @@ const ActiveRideScreen = ({ navigation, route }: any) => {
 };
 
 // Haversine distance in km
-function haversineKm(
-  a: { latitude: number; longitude: number },
-  b: { latitude: number; longitude: number }
-): number {
-  const R = 6371;
-  const dLat = ((b.latitude  - a.latitude)  * Math.PI) / 180;
-  const dLon = ((b.longitude - a.longitude) * Math.PI) / 180;
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((a.latitude  * Math.PI) / 180) *
-    Math.cos((b.latitude  * Math.PI) / 180) *
-    Math.sin(dLon / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
-}
+// function haversineKm(
+//   a: { latitude: number; longitude: number },
+//   b: { latitude: number; longitude: number }
+// ): number {
+//   const R = 6371;
+//   const dLat = ((b.latitude  - a.latitude)  * Math.PI) / 180;
+//   const dLon = ((b.longitude - a.longitude) * Math.PI) / 180;
+//   const h =
+//     Math.sin(dLat / 2) ** 2 +
+//     Math.cos((a.latitude  * Math.PI) / 180) *
+//     Math.cos((b.latitude  * Math.PI) / 180) *
+//     Math.sin(dLon / 2) ** 2;
+//   return R * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+// }
 
 export default ActiveRideScreen;
 
