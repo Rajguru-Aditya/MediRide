@@ -55,30 +55,29 @@ const UserTrackingScreen = ({ navigation, route }: any) => {
   // ─── If no rideId from params, find user's active ride ───────
   useEffect(() => {
     if (rideIdFromParams || !currentUser?.uid) return;
-
-    const findRide = async () => {
+  
+    const fetchActiveRide = async () => {
       try {
-        const snapshot = await firestore()
-          .collection('rides')
-          .where('userId', '==', currentUser.uid)
-          .where('status', 'in', ['searching', 'accepted', 'en_route', 'arrived'])
-          .orderBy('createdAt', 'desc')
-          .limit(1)
+        const userDoc = await firestore()
+          .collection('users')
+          .doc(currentUser.uid)
           .get();
-
-        if (snapshot.empty) {
+  
+        const activeRideId = userDoc.data()?.activeRideId;
+  
+        if (!activeRideId) {
           setHasActiveRide(false);
         } else {
-          setRideId(snapshot.docs[0].id);
+          setRideId(activeRideId);
         }
       } catch (e) {
-        console.log('Find ride error:', e);
+        console.log('Fetch active ride error:', e);
       } finally {
         setLoading(false);
       }
     };
-
-    findRide();
+  
+    fetchActiveRide();
   }, [currentUser?.uid, rideIdFromParams]);
 
   // ─── Single onSnapshot listener once rideId is known ─────────
@@ -92,7 +91,15 @@ const UserTrackingScreen = ({ navigation, route }: any) => {
       .onSnapshot(snap => {
         if (!snap.exists) return;
         const data = snap.data();
+        console.log("Data: ", data)
         if (!data) return;
+
+        console.log('=== SNAPSHOT FIRED ===');
+        console.log('status:', data?.status);
+        console.log('driverLocation:', JSON.stringify(data?.driverLocation));
+        console.log('pickup:', JSON.stringify(data?.pickup));
+        console.log('pickupCoords state:', JSON.stringify(pickupCoords));
+        console.log('rideId:', rideId);
 
         // Status
         if (data.status) setRideStatus(data.status as RideStatus);

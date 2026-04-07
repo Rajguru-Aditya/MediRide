@@ -112,6 +112,16 @@ const ConfirmationScreen = ({ navigation, route }: any) => {
 
       console.log('Ride created:', rideRef.id);
 
+      await firestore()
+      .collection('users')
+      .doc(currentUser?.uid)
+      .set(
+        {
+          activeRideId: rideRef.id,
+        },
+        { merge: true }
+      );
+
       // Success toast
       // ✅ Show success alert
       setAlertType('success');
